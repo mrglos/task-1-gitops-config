@@ -1,0 +1,27 @@
+# vim: set filetype=helm:
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: spring-boot-project
+  namespace: argocd
+spec:
+  description: Project for Spring Boot API applications
+  sourceRepos:
+    - 'https://github.com/mrglos/task-1-helm-charts.git'
+    - 'https://github.com/mrglos/task-1-gitops-config.git'
+  destinations:
+    # 1. dev environment (strict cluster nad namesptace mapping)
+    - namespace: 'spring-boot-api-dev'
+      name: 'dev-global-cluster-0'
+      
+    # 2. prod environment (strict cluster nad namesptace mapping)
+    - namespace: 'spring-boot-api-prd'
+      name: 'prd-global-cluster-5'
+      
+    # 3. Local / test environment (workaround for Kind/Minikube cluster type)
+    - namespace: 'spring-boot-api-*'
+      server: 'https://kubernetes.default.svc'
+      
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace

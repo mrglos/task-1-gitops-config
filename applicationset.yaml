@@ -1,0 +1,43 @@
+# vim: set filetype=helm:
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: spring-boot-api-deployer
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - cluster: dev-global-cluster-0
+            env: dev
+            url: https://kubernetes.default.svc # Assuming local connection/mapping
+          - cluster: prd-global-cluster-5
+            env: prd
+            url: https://kubernetes.default.svc # Assuming local connection/mapping
+  template:
+    metadata:
+      name: "{{env}}-spring-boot-api"
+    spec:
+      project: "spring-boot-project"
+      sources:
+        # Repo 1: Helm Chart
+        - repoURL: 'https://github.com/mrglos/task-1-helm-charts.git'
+          targetRevision: HEAD
+          path: charts/spring-boot-api
+          helm:
+            # Repo 2: Values for environments (Multiple Sources pattern)
+            valueFiles:
+              - '$values/env-values/{{env}}.yaml'
+        # Definition of secondary source for values
+        - repoURL: 'https://github.com/mrglos/task-1-gitops-config.git'
+          targetRevision: HEAD
+          ref: values # Alias referenced by $values field in the helm valueFiles
+      destination:
+        server: '{{url}}'
+        namespace: 'spring-boot-api-{{env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true # Reqiurement: Create namespace if it doesn't exist
