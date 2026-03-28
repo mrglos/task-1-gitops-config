@@ -1,0 +1,8 @@
+# vim set filetype=helm:
+replicaCount: 3
+envName: "dev"
+ingress:
+  host: "api-dev.example.com"
+resources:
+  limits: { cpu: 200m, memory: 256Mi }
+  requests: { cpu: 100m, memory: 128Mi }
